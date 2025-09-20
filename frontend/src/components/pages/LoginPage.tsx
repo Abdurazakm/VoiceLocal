@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
+import { useAuth } from '../../contexts/AuthContext';
 
-interface LoginPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function LoginPage({ onNavigate }: LoginPageProps) {
+export function LoginPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,11 +27,26 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', formData);
-    onNavigate('dashboard');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        // Redirect to the intended page or default to dashboard
+        const targetPath = redirectAfterLogin || '/dashboard';
+        setRedirectAfterLogin(null);
+        navigate(targetPath);
+      } else {
+        setError(result.error || 'Invalid email or password. Please try again.');
+      }
+    } catch {
+      setError('An error occurred during login. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -103,6 +120,13 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
                 </div>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                  {error}
+                </div>
+              )}
+
               {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -127,9 +151,10 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
 
@@ -190,7 +215,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
                 Don't have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => onNavigate('register')}
+                  onClick={() => navigate('/register')}
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Sign up

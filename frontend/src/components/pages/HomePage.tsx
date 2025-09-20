@@ -1,13 +1,11 @@
 import { ArrowRight, Users, TrendingUp, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 
-interface HomePageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function HomePage({ onNavigate }: HomePageProps) {
+export function HomePage() {
+  const navigate = useNavigate();
   const stats = [
     { title: 'Total Issues', value: '1,247', icon: Users, color: 'text-blue-600' },
     { title: 'Top Voted', value: '89', icon: TrendingUp, color: 'text-green-600' },
@@ -30,14 +28,14 @@ export function HomePage({ onNavigate }: HomePageProps) {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
-                  onClick={() => onNavigate('post-issue')}
+                  onClick={() => navigate('/post-issue')}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
                 >
                   Post an Issue
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button
-                  onClick={() => onNavigate('issues-feed')}
+                  onClick={() => navigate('/issues')}
                   variant="outline"
                   className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 text-lg"
                 >
@@ -100,13 +98,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                onClick={() => onNavigate('register')}
+                onClick={() => navigate('/register')}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
               >
                 Get Started
               </Button>
               <Button
-                onClick={() => onNavigate('about')}
+                onClick={() => navigate('/about')}
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3 text-lg"
               >

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, MapPin } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -6,12 +7,11 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
 import { Checkbox } from '../ui/checkbox';
+import { useAuth } from '../../contexts/AuthContext';
 
-interface RegisterPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function RegisterPage({ onNavigate }: RegisterPageProps) {
+export function RegisterPage() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -23,6 +23,8 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,19 +34,41 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
+      setIsLoading(false);
       return;
     }
     if (!acceptTerms) {
-      alert('Please accept the terms and conditions');
+      setError('Please accept the terms and conditions');
+      setIsLoading(false);
       return;
     }
-    // Handle registration logic here
-    console.log('Registration attempt:', formData);
-    onNavigate('dashboard');
+    
+    try {
+      const result = await register({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        location: formData.location
+      });
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Registration failed. Please try again.');
+      }
+    } catch {
+      setError('An error occurred during registration. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -214,13 +238,20 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                 </label>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                  {error}
+                </div>
+              )}
+
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={!acceptTerms}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={!acceptTerms || isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
 
@@ -281,7 +312,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
                 Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => onNavigate('login')}
+                  onClick={() => navigate('/login')}
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Sign in

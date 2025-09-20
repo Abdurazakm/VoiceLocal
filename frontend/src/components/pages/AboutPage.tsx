@@ -2,12 +2,10 @@ import { Users, MessageCircle, Vote, CheckCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { useNavigate } from 'react-router-dom';
 
-interface AboutPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function AboutPage({ onNavigate }: AboutPageProps) {
+export function AboutPage() {
+  const navigate = useNavigate();
   const features = [
     {
       icon: Users,
@@ -83,7 +81,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
               everyone to participate in creating positive change in their neighborhoods.
             </p>
             <Button
-              onClick={() => onNavigate('register')}
+              onClick={() => navigate('/register')}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               Join Our Community
@@ -199,13 +197,13 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => onNavigate('register')}
+              onClick={() => navigate('/register')}
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
             >
               Get Started Today
             </Button>
             <Button
-              onClick={() => onNavigate('post-issue')}
+              onClick={() => navigate('/post-issue')}
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3"
             >

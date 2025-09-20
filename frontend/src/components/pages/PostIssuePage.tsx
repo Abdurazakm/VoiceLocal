@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, MapPin, FileText, Type } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import { useAuth } from '../../contexts/AuthContext';
+import { useIssues } from '../../contexts/IssueContext';
+import { useNavigate } from 'react-router-dom';
 
-interface PostIssuePageProps {
-  onNavigate: (page: string) => void;
-  onSubmitIssue: (issue: {
-    title: string;
-    description: string;
-    location: string;
-    image?: File;
-  }) => void;
-}
-
-export function PostIssuePage({ onNavigate, onSubmitIssue }: PostIssuePageProps) {
+export function PostIssuePage() {
+  const { isAuthenticated, setRedirectAfterLogin, user } = useAuth();
+  const { addIssue } = useIssues();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,6 +20,14 @@ export function PostIssuePage({ onNavigate, onSubmitIssue }: PostIssuePageProps)
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setRedirectAfterLogin('post-issue');
+      navigate('/login');
+    }
+  }, [isAuthenticated, setRedirectAfterLogin, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -47,16 +51,42 @@ export function PostIssuePage({ onNavigate, onSubmitIssue }: PostIssuePageProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.title && formData.description && formData.location) {
-      onSubmitIssue({
-        ...formData,
-        image: selectedImage || undefined,
+    
+    // Double-check authentication before submitting
+    if (!isAuthenticated) {
+      setRedirectAfterLogin('post-issue');
+      navigate('/login');
+      return;
+    }
+    
+    if (formData.title && formData.description && formData.location && user) {
+      addIssue({
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        imageUrl: selectedImage ? URL.createObjectURL(selectedImage) : undefined,
+        status: 'open',
+        author: `${user.firstName} ${user.lastName}`,
+        authorId: user.id,
+        category: 'infrastructure',
+        priority: 'medium'
       });
-      onNavigate('confirmation');
+      navigate('/confirmation');
     }
   };
 
   const isFormValid = formData.title && formData.description && formData.location;
+
+  // Show loading or nothing while redirecting to login
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -193,7 +223,7 @@ export function PostIssuePage({ onNavigate, onSubmitIssue }: PostIssuePageProps)
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => onNavigate('home')}
+                  onClick={() => navigate('/')}
                   className="flex-1"
                 >
                   Cancel

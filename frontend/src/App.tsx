@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './components/pages/HomePage';
@@ -9,69 +9,109 @@ import { DashboardPage } from './components/pages/DashboardPage';
 import { LoginPage } from './components/pages/LoginPage';
 import { RegisterPage } from './components/pages/RegisterPage';
 import { AboutPage } from './components/pages/AboutPage';
+import { Admin } from './components/admin/Admin';
+import { ProfilePage } from './components/pages/ProfilePage';
+import { IssueDetailsPage } from './components/pages/IssueDetailsPage';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { IssueProvider } from './contexts/IssueContext';
+import { ErrorBoundary } from './components/ui/error-boundary';
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+// Protected Route Component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+}
 
-  const handleNavigation = (page: string) => {
-    setCurrentPage(page);
-  };
+// Admin Route Component
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // In a real app, you'd check user role/permissions
+  // For now, we'll assume authenticated users can access admin (you can enhance this)
+  
+  return <>{children}</>;
+}
 
-  const handleSubmitIssue = (issue: {
-    title: string;
-    description: string;
-    location: string;
-    image?: File;
-  }) => {
-    // Handle issue submission logic here
-    console.log('New issue submitted:', issue);
-    // In a real app, you would send this to a backend API
-  };
+function AppContent() {
+  const location = useLocation();
 
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <HomePage onNavigate={handleNavigation} />;
-      case 'post-issue':
-        return (
-          <PostIssuePage 
-            onNavigate={handleNavigation} 
-            onSubmitIssue={handleSubmitIssue}
-          />
-        );
-      case 'confirmation':
-        return <ConfirmationPage onNavigate={handleNavigation} />;
-      case 'issues-feed':
-        return <IssuesFeedPage onNavigate={handleNavigation} />;
-      case 'dashboard':
-        return <DashboardPage onNavigate={handleNavigation} />;
-      case 'login':
-        return <LoginPage onNavigate={handleNavigation} />;
-      case 'register':
-        return <RegisterPage onNavigate={handleNavigation} />;
-      case 'about':
-        return <AboutPage onNavigate={handleNavigation} />;
-      default:
-        return <HomePage onNavigate={handleNavigation} />;
-    }
-  };
-
-  // Don't show navbar and footer on auth pages
-  const showLayout = !['login', 'register'].includes(currentPage);
+  // Don't show navbar and footer on auth and admin pages
+  const hideLayout = ['/login', '/register', '/admin'].some(path => 
+    location.pathname.startsWith(path)
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
-      {showLayout && (
-        <Navbar currentPage={currentPage} onNavigate={handleNavigation} />
-      )}
+      {!hideLayout && <Navbar />}
       
       <main className="flex-1">
-        {renderCurrentPage()}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/issues" element={<IssuesFeedPage />} />
+          <Route path="/issue/:id" element={<IssueDetailsPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route 
+            path="/post-issue" 
+            element={
+              <ProtectedRoute>
+                <PostIssuePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/confirmation" 
+            element={
+              <ProtectedRoute>
+                <ConfirmationPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/*" 
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            } 
+          />
+        </Routes>
       </main>
       
-      {showLayout && (
-        <Footer onNavigate={handleNavigation} />
-      )}
+      {!hideLayout && <Footer />}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <IssueProvider>
+            <AppContent />
+          </IssueProvider>
+        </AuthProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }

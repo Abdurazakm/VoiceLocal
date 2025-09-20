@@ -1,12 +1,10 @@
 import { CheckCircle, ArrowRight, Home } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
+import { useNavigate } from 'react-router-dom';
 
-interface ConfirmationPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function ConfirmationPage({ onNavigate }: ConfirmationPageProps) {
+export function ConfirmationPage() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,7 +24,7 @@ export function ConfirmationPage({ onNavigate }: ConfirmationPageProps) {
             
             <div className="space-y-4">
               <Button
-                onClick={() => onNavigate('issues-feed')}
+                onClick={() => navigate('/issues')}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 View Your Issue
@@ -34,7 +32,7 @@ export function ConfirmationPage({ onNavigate }: ConfirmationPageProps) {
               </Button>
               
               <Button
-                onClick={() => onNavigate('home')}
+                onClick={() => navigate('/')}
                 variant="outline"
                 className="w-full"
               >

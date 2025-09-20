@@ -2,12 +2,12 @@ import { TrendingUp, Users, CheckCircle, MessageCircle, Calendar, MapPin } from 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
+import { Breadcrumb } from '../ui/breadcrumb';
 
-interface DashboardPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function DashboardPage({ onNavigate: _ }: DashboardPageProps) {
+export function DashboardPage() {
+  const breadcrumbItems = [
+    { label: 'Dashboard', isCurrentPage: true }
+  ];
   const stats = [
     { title: 'Total Issues Raised', value: '1,247', change: '+12%', icon: Users, color: 'text-blue-600' },
     { title: 'Resolved Issues', value: '342', change: '+8%', icon: CheckCircle, color: 'text-green-600' },
@@ -59,8 +59,13 @@ export function DashboardPage({ onNavigate: _ }: DashboardPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-4">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Community Dashboard</h1>
