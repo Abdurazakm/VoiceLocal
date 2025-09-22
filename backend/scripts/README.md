@@ -1,0 +1,1 @@
+Place helper scripts here (e.g., DB migrations, seeding commands, maintenance tasks).

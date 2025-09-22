@@ -1,0 +1,1 @@
+"""Admin registrations for issues domain models."""

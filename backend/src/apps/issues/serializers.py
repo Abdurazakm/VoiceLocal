@@ -1,0 +1,1 @@
+"""DRF serializers for Issue, Comment, Vote, Category."""

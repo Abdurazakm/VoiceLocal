@@ -1,0 +1,1 @@
+"""Add initial API smoke tests here once endpoints are implemented."""

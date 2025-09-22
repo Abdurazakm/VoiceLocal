@@ -1,0 +1,1 @@
+"""Namespace for Django apps (common, accounts, issues, ...)."""
